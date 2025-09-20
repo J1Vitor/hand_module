@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/plugins/hand_module" >
+        <file>icon.png</file>
+        <file>info(2).png</file>
+    </qresource>
+</RCC>
