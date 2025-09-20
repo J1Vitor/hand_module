@@ -31,4 +31,4 @@ O plugin irá chamar a rotina HAND desenvolvida em Fortran. Ao finalizar, um Geo
 ## Licença 
 
 MIT License   
-Copyright (c) 2025 <João Vitor Lima & Adriano Paz>
+Copyright (c) 2025 João Vitor Lima & Adriano Paz
