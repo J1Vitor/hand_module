@@ -20,13 +20,13 @@ O processamento pode ser executado localmente, invocando rotinas em Python/Fortr
 
 1.  Inicie o plugin através do menu `Plugins → HAND Plugin`.
 2.  Selecione os arquivos de entrada (inputs):
-    * Modelo Digital de Elevação - MDE (raster GeoTIFF) 
-    * Bacia Hidrográfica (raster GeoTIFF) 
-    * Direção de fluxo (raster GeoTIFF) 
-    * Rede de drenagem (raster GeoTIFF) 
+    * Modelo Digital de Elevação - MDE (raster GeoTIFF com Data Type Float) 
+    * Bacia Hidrográfica (raster GeoTIFF Data Type Integer) 
+    * Direção de fluxo (raster GeoTIFF Data Type Integer) 
+    * Rede de drenagem (raster GeoTIFF Data Type Integer) 
 3.  Clique no botão `Gerar HAND`.
 
-O plugin irá chamar a rotina HAND desenvolvida em Fortran. Ao finalizar, um GeoTIFF com o resultado do HAND será gerado e adicionado automaticamente ao projeto atual do QGIS.
+O plugin irá chamar a rotina HAND desenvolvida em Fortran. Ao finalizar, um GeoTIFF com o resultado do HAND (raster GeoTIFF com Data Type Float) será gerado e adicionado automaticamente ao projeto atual do QGIS.
 
 ## Licença 
 

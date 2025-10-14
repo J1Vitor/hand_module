@@ -24,15 +24,15 @@ Uso no QGIS
 Inicie o plugin pelo menu Plugins → HAND Plugin.
 
 Selecione os inputs:
--Modelo Digital de Eleveção - MDE (raster GeoTIFF)
--Bacia Hidrográfica (raster GeoTIFF)
--Direção de fluxo (raster GeoTIFF)
--Rede de drenagem (raster GeoTIFF)
+-Modelo Digital de Eleveção - MDE (raster GeoTIFF com Data Type Float)
+-Bacia Hidrográfica (raster GeoTIFF Data Type Integer)
+-Direção de fluxo (raster GeoTIFF Data Type Integer)
+-Rede de drenagem (raster GeoTIFF Data Type Integer)
 
 Clique em no botão Gerar HAND. O plugin fará:
 Chamar a rotina HAND desenvolvida em Fortran.
 
-Ao finalizar, será gerado um GeoTIFF com o HAND que será adicionado automaticamente ao projeto atual do QGIS.
+Ao finalizar, será gerado um GeoTIFF com o HAND (raster GeoTIFF com Data Type Float) que será adicionado automaticamente ao projeto atual do QGIS.
 
 MIT License
 Copyright (c) 2025 <João Vitor Lima & Adriano Paz>

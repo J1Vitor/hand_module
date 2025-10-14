@@ -74,6 +74,7 @@ class Hand:
         self.first_start = None
         self.dlg_hand = HandDialog()
         self.diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+        self.projection = None
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -177,6 +178,28 @@ class Hand:
         # will be set False in run()
         self.first_start = True
 
+        # Aplica filtro para apenas raster aos comboboxes
+        self.dlg_hand.cb_01.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.dlg_hand.cb_02.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.dlg_hand.cb_03.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.dlg_hand.cb_04.setFilters(QgsMapLayerProxyModel.RasterLayer)
+
+        # Configura selecoes de arquivos
+        self.dlg_hand.btn_01.clicked.connect(
+            lambda: self.carregaArquivos(self.dlg_hand.cb_01))
+        self.dlg_hand.btn_02.clicked.connect(
+            lambda: self.carregaArquivos(self.dlg_hand.cb_02))
+        self.dlg_hand.btn_03.clicked.connect(
+            lambda: self.carregaArquivos(self.dlg_hand.cb_03))
+        self.dlg_hand.btn_04.clicked.connect(
+            lambda: self.carregaArquivos(self.dlg_hand.cb_04))
+        self.dlg_hand.btn_05.clicked.connect(lambda: self.save_buttons())
+
+        # Inicia processamento
+        self.dlg_hand.btn_hand.clicked.connect(lambda: self.run_process_hand())
+        self.dlg_hand.btn_cancel.clicked.connect(
+            lambda: self.cancel_log_page())
+
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -208,7 +231,7 @@ class Hand:
             # Janela de dialogo com o Usuario
             if file_type == "raster":
                 file_, _ = QFileDialog.getOpenFileName(
-                    None, "Seleciona um arquivo!", "GeoTIFF (*.tif)", options=options)
+                    None, "Seleciona um arquivo!", "", "GeoTIFF (*.tif)", options=options)
                 if not file_:
                     result = "Nenhum arquivo foi selecinado."
                     reply = QMessageBox.warning(
@@ -269,31 +292,53 @@ class Hand:
         # Limpa pasta temp
         self.apaga_arquivos_temp()
 
+        # Define os caminhos para os arquivos GeoTIFF temporários
+        bacia_temp_tif = self.diretorio_atual + r'\temp\bacia_temp.tif'
+        MDE_temp_tif = self.diretorio_atual + r'\temp\MDE_temp.tif'
+        dir_temp_tif = self.diretorio_atual + r'\temp\dir_temp.tif'
+        drenagem_temp_tif = self.diretorio_atual + r'\temp\drenagem_temp.tif'
+
+        self.dlg_hand.progressBar.setValue(5)
+        # Converte os arquivos de entrada para os tipos de dados corretos em cópias temporárias
+        gdal.Translate(bacia_temp_tif, self.dlg_hand.cb_01.currentLayer(
+        ).source(), outputType=gdal.GDT_Int16)
+
+        # armazena geotransformacao e projecao
+        dataset = gdal.Open(self.dlg_hand.cb_01.currentLayer().source())
+        self.projection = dataset.GetProjection()
+        dataset = None  # Fecha o dataset
+
+        self.dlg_hand.progressBar.setValue(10)
+        gdal.Translate(MDE_temp_tif, self.dlg_hand.cb_02.currentLayer(
+        ).source(), outputType=gdal.GDT_Float32)
+        self.dlg_hand.progressBar.setValue(15)
+        gdal.Translate(dir_temp_tif, self.dlg_hand.cb_03.currentLayer(
+        ).source(), outputType=gdal.GDT_Int16)
+        self.dlg_hand.progressBar.setValue(20)
+        gdal.Translate(drenagem_temp_tif, self.dlg_hand.cb_04.currentLayer(
+        ).source(), outputType=gdal.GDT_Int16)
+        self.dlg_hand.progressBar.setValue(25)
+
         # Arquivos rst bin
         bacia_rst = self.diretorio_atual + r'\temp\bacia.rst'
         MDE_rst = self.diretorio_atual + r'\temp\MDE.rst'
         dir_rst = self.diretorio_atual + r'\temp\dir.rst'
         drenagem_rst = self.diretorio_atual + r'\temp\drenagem.rst'
 
-        self.dlg_hand.progressBar.setValue(10)
-        # Converte bacia
-        gdal.Translate(bacia_rst, self.dlg_hand.cb_01.currentLayer(
-        ).source(), format="RST")
-        self.dlg_hand.progressBar.setValue(20)
-
-        # Converte MDE
-        gdal.Translate(MDE_rst, self.dlg_hand.cb_02.currentLayer(
-        ).source(), format="RST")
+        # Converte as cópias temporárias para o formato RST
+        gdal.Translate(bacia_rst, bacia_temp_tif, format="RST")
         self.dlg_hand.progressBar.setValue(30)
 
+        # Converte MDE
+        gdal.Translate(MDE_rst, MDE_temp_tif, format="RST")
+        self.dlg_hand.progressBar.setValue(35)
+
         # Converte direcoes de fluxo
-        gdal.Translate(dir_rst, self.dlg_hand.cb_03.currentLayer(
-        ).source(), format="RST")
+        gdal.Translate(dir_rst, dir_temp_tif, format="RST")
         self.dlg_hand.progressBar.setValue(40)
 
         # Converte rede de drenagem
-        gdal.Translate(drenagem_rst, self.dlg_hand.cb_04.currentLayer(
-        ).source(), format="RST")
+        gdal.Translate(drenagem_rst, drenagem_temp_tif, format="RST")
         self.dlg_hand.progressBar.setValue(50)
 
     def run_process_hand(self):
@@ -350,13 +395,15 @@ class Hand:
                 mensagem_log = f"Convertendo arquivo para GeoTIFF...\n"
                 self.dlg_hand.te_logg.append(mensagem_log)
                 gdal.Translate(self.dlg_hand.le_01.text(),
-                               hand_out, format="GTiff")
+                               hand_out, format="GTiff", outputType=gdal.GDT_Float32, outputSRS=self.projection)
                 self.dlg_hand.progressBar.setValue(90)
 
                 # Adiciona ao qgis o resultado
                 file_ = self.dlg_hand.le_01.text()
+
                 mensagem_log = f"Adicionando arquivo ao QGIS...\n"
                 self.dlg_hand.te_logg.append(mensagem_log)
+
                 layer = QgsRasterLayer(
                     file_, os.path.basename(file_), "gdal")
                 QgsProject.instance().addMapLayer(layer)
@@ -368,11 +415,13 @@ class Hand:
                 QMessageBox.information(
                     self.dlg_hand, "Informação!", "Operação realizada com sucesso!")
 
+                self.apaga_arquivos_temp()
+
             else:
                 QMessageBox.warning(
                     self.dlg_hand, "Erro!", "Por favor, forneca um caminho válido para salvar o HAND.")
                 self.dlg_hand.progressBar.setValue(0)
-
+                self.apaga_arquivos_temp()
         else:
             QMessageBox.warning(
                 self.dlg_hand, "Erro!", "Por favor, verifique se os arquivos enviados correspondem aos que foram solicitados.")
@@ -380,39 +429,10 @@ class Hand:
 
     def run(self):
         """Run method that performs all the real work"""
-
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
-            self.first_start = False
-
-        # Aplica filtro para apenas raster aos comboboxes
-        self.dlg_hand.cb_01.setFilters(QgsMapLayerProxyModel.RasterLayer)
-        self.dlg_hand.cb_02.setFilters(QgsMapLayerProxyModel.RasterLayer)
-        self.dlg_hand.cb_03.setFilters(QgsMapLayerProxyModel.RasterLayer)
-        self.dlg_hand.cb_04.setFilters(QgsMapLayerProxyModel.RasterLayer)
-
-        # Configura selecoes de arquivos
-        self.dlg_hand.btn_01.clicked.connect(
-            lambda: self.carregaArquivos(self.dlg_hand.cb_01))
-        self.dlg_hand.btn_02.clicked.connect(
-            lambda: self.carregaArquivos(self.dlg_hand.cb_02))
-        self.dlg_hand.btn_03.clicked.connect(
-            lambda: self.carregaArquivos(self.dlg_hand.cb_03))
-        self.dlg_hand.btn_04.clicked.connect(
-            lambda: self.carregaArquivos(self.dlg_hand.cb_04))
-        self.dlg_hand.btn_05.clicked.connect(lambda: self.save_buttons())
-
-        # show the dialog
-        self.dlg_hand.show()
-
-        # Inicia processamento
-        self.dlg_hand.btn_hand.clicked.connect(lambda: self.run_process_hand())
-        self.dlg_hand.btn_cancel.clicked.connect(
-            lambda: self.cancel_log_page())
-
-        # Run the dialog event loop
-        self.dlg_hand.exec_()
-        self.dlg_hand.close()
-        self.apaga_arquivos_temp()
-        qgis.utils.reloadPlugin('hand_module')
+        if not self.dlg_hand.isVisible():
+            # Se o diálogo não estiver visível, mostre-o.
+            self.dlg_hand.show()
+        else:
+            # Se já estiver visível, traga-o para a frente e dê o foco.
+            self.dlg_hand.raise_()
+            self.dlg_hand.activateWindow()
