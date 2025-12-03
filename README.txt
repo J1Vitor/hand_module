@@ -1,38 +1,38 @@
 HAND Plugin
 
-HAND — plugin para geração do raster Height Above Nearest Drainage (altura acima do ponto drenante mais próximo) a partir de: 
-Modelo Digital de Elevação (MDE), 
-bacia hidrográfica, 
-raster de direção de fluxo e rede de drenagem.
+HAND — plugin for generating the Height Above Nearest Drainage (HAND) raster from:
+Digital Elevation Model (DEM),
+watershed,
+flow direction raster, and drainage network.
 
-Descrição
+Description
 
-O plugin calcula o raster HAND que representa, para cada pixel do DEM, a diferença vertical entre a elevação do pixel e a elevação do pixel drenante mais próximo (o pixel da rede de drenagem para o qual ele escoa). 
-O produto é amplamente utilizado em análises de susceptibilidade a inundações, modelagem hidrológica e mapeamento de planícies aluviais.
-O processamento pode ser executado localmente (invocando rotinas Python/Fortran) ou por meio de um backend que receba arquivos via HTTP e retorne o GeoTIFF resultante.
+The plugin calculates the HAND raster, which represents, for each DEM pixel, the vertical difference between the pixel’s elevation and the elevation of the nearest drainage pixel (the drainage network pixel to which it flows).
+This product is widely used in flood susceptibility analysis, hydrological modeling, and floodplain mapping.
+Processing can be executed locally (by invoking Python/Fortran routines) or through a backend that receives files via HTTP and returns the resulting GeoTIFF.
 
-Requisitos
+Requirements
 
 QGIS 3.22+.
-Python 3.9+ (compatível com  QGIS/OSGeo4W).
-GDAL(>=3.8) com bindings Python (osgeo.gdal).
+Python 3.9+ (compatible with QGIS/OSGeo4W).
+GDAL (>=3.8) with Python bindings (osgeo.gdal).
 NumPy.
-Separador de casas decimais deve ser o ponto (.) não vírgula.
+The decimal separator must be a dot (.) and not a comma (,).
 
-Uso no QGIS
+Usage in QGIS
 
-Inicie o plugin pelo menu Plugins → HAND Plugin.
+Start the plugin from the menu Plugins → HAND Plugin.
 
-Selecione os inputs:
--Modelo Digital de Eleveção - MDE (raster GeoTIFF com Data Type Float)
--Bacia Hidrográfica (raster GeoTIFF Data Type Integer)
--Direção de fluxo (raster GeoTIFF Data Type Integer)
--Rede de drenagem (raster GeoTIFF Data Type Integer)
+Select the inputs:
+-Digital Elevation Model - DEM (GeoTIFF raster with Data Type Float)
+-Watershed (GeoTIFF raster Data Type Integer)
+-Flow Direction (GeoTIFF raster Data Type Integer)
+-Drainage Network (GeoTIFF raster Data Type Integer)
 
-Clique em no botão Gerar HAND. O plugin fará:
-Chamar a rotina HAND desenvolvida em Fortran.
+Click the Generate HAND button. The plugin will:
+Call the HAND routine developed in Fortran.
 
-Ao finalizar, será gerado um GeoTIFF com o HAND (raster GeoTIFF com Data Type Float) que será adicionado automaticamente ao projeto atual do QGIS.
+After completion, a GeoTIFF containing the HAND result (GeoTIFF raster with Data Type Float) will be generated and automatically added to the current QGIS project.
 
 MIT License
 Copyright (c) 2025 <João Vitor Lima & Adriano Paz>

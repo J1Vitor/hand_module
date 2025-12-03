@@ -21,6 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import html
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon, QFont
 from qgis.PyQt.QtWidgets import QApplication, QAction, QFileDialog, QMessageBox
@@ -36,6 +37,7 @@ from pathlib import Path
 from osgeo import ogr, gdal, gdalconst
 import subprocess
 from datetime import datetime
+import platform
 
 
 class Hand:
@@ -165,6 +167,120 @@ class Hand:
 
         return action
 
+    def traduz_interface(self, idioma: str):
+        """Traduz os textos da interface e mensagens para o idioma selecionado ('pt' ou 'en')."""
+        self.idioma_atual = idioma
+        # Mensagens traduzidas
+        self.msgs = {
+            'pt': {
+                'no_file_selected': 'Nenhum arquivo foi selecionado.',
+                'warning_title': 'Atenção',
+                'error_title': 'Erro!',
+                'info_title': 'Informação!',
+                'invalid_filename': 'Por favor, forneça um nome de arquivo válido para salvar o HAND.',
+                'invalid_path': 'Por favor, forneca um caminho válido para salvar o HAND.',
+                'success': 'Operação realizada com sucesso!',
+                'hand_success': 'HAND determinado com sucesso...',
+                'hand_start': 'Iniciando processamento do HAND...',
+                'hand_convert': 'Convertendo arquivo para GeoTIFF...',
+                'hand_add': 'Adicionando arquivo ao QGIS...',
+                'hand_error': 'Por favor, verifique se os arquivos enviados correspondem aos que foram solicitados.',
+                'cancel_log': '<font>\nATENÇÃO: interrompendo o processo HAND...</font>',
+                'success_log': 'Êxito! Operação realizada com sucesso...'
+            },
+            'en': {
+                'no_file_selected': 'No file was selected.',
+                'warning_title': 'Warning',
+                'error_title': 'Error!',
+                'info_title': 'Information!',
+                'invalid_filename': 'Please provide a valid file name to save HAND.',
+                'invalid_path': 'Please provide a valid path to save HAND.',
+                'success': 'Operation completed successfully!',
+                'hand_success': 'HAND successfully determined...',
+                'hand_start': 'Starting HAND processing...',
+                'hand_convert': 'Converting file to GeoTIFF...',
+                'hand_add': 'Adding file to QGIS...',
+                'hand_error': 'Please check if the provided files match the requested ones.',
+                'cancel_log': '<font>\nATTENTION: stopping HAND process...</font>',
+                'success_log': 'Success! Operation completed successfully...'
+            }
+        }
+        # ...interface translation as before...
+        """Traduz os textos da interface para o idioma selecionado ('pt' ou 'en')."""
+        if idioma == 'pt':
+            self.dlg_hand.setWindowTitle('HAND Plugin')
+            self.dlg_hand.tabWidget.setTabText(0, 'Parâmetros')
+            self.dlg_hand.tabWidget.setTabText(1, 'Log')
+            self.dlg_hand.label.setText('Bacia Hidrográfica')
+            self.dlg_hand.label_2.setText('Modelo Digital de Elevação (MDE)')
+            self.dlg_hand.label_3.setText('Direções de Fluxo')
+            self.dlg_hand.label_5.setText('Rede de Drenagem')
+            self.dlg_hand.label_4.setText(
+                'Height Above Nearest Drainage (HAND)')
+            self.dlg_hand.groupBox.setTitle('Saída')
+            self.dlg_hand.btn_hand.setText('GERAR HAND')
+            self.dlg_hand.btn_cancel.setText('CANCELAR')
+            self.dlg_hand.label_6.setText('Selecione o idioma:')
+            self.dlg_hand.label_11.setToolTip(
+                'Adicione a delimitação da bacia hidrográfica. O arquivo deve ser raster (GeoTIFF).')
+            self.dlg_hand.label_12.setToolTip(
+                'Adicione o modelo digital de elevação. O arquivo deve ser raster (GeoTIFF).')
+            self.dlg_hand.label_13.setToolTip(
+                'Adicione a direção de fluxo. O arquivo deve ser raster (GeoTIFF).')
+            self.dlg_hand.label_14.setToolTip(
+                'Adicione a rede de drenagem. O arquivo deve ser raster (GeoTIFF).')
+            self.dlg_hand.label_15.setToolTip(
+                'Selecione uma pasta para salvar o HAND resultante. O arquivo será adicionado ao projeto QGIS atual!')
+            html_description = (
+                '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">'
+                '<html><head><meta name="qrichtext" content="1" /><style type="text/css">'
+                'p, li { white-space: pre-wrap; }'
+                '</style></head><body style=" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;">'
+                '<p align="justify" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:12pt; font-weight:600; color:#7c7c7c;">Descrição<br /></span></p>'
+                '<p align="justify" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:10pt; color:#838383;">Este plugin determina o Height Above Nearest Drainage (HAND), um descritor de terreno definido pela diferença de elevação entre um ponto de superfície e o ponto mais próximo da rede de drenagem para o qual ele drena¹.</span></p>'
+                '<p align="justify" style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt; color:#838383;"><br /></p>'
+                '<p align="justify" style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt; color:#838383;"><br /></p>'
+                '<p align="justify" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:7pt; color:#838383;">¹RENNÓ, C.D.</span><span style=" font-size:7pt; font-style:italic; color:#838383;"> et a</span><span style=" font-size:7pt; color:#838383;">l. “HAND, a new terrain descriptor using SRTM-DEM: mapping terra-firmerainforest environments in Amazonia”. Remote Sensing of Environment 112, 3469-3481, 2008.</span></p></body></html>'
+            )
+            self.dlg_hand.textEdit.setHtml(html_description)
+
+        else:
+            self.dlg_hand.setWindowTitle('HAND Plugin')
+            self.dlg_hand.tabWidget.setTabText(0, 'Parameters')
+            self.dlg_hand.tabWidget.setTabText(1, 'Log')
+            self.dlg_hand.label.setText('Watershed delineation')
+            self.dlg_hand.label_2.setText('Digital Elevation Model (DEM)')
+            self.dlg_hand.label_3.setText('Flow Directions')
+            self.dlg_hand.label_5.setText('River Drainage Network')
+            self.dlg_hand.label_4.setText(
+                'Height Above Nearest Drainage (HAND)')
+            self.dlg_hand.groupBox.setTitle('Output')
+            self.dlg_hand.btn_hand.setText('RUN HAND')
+            self.dlg_hand.btn_cancel.setText('CANCEL')
+            self.dlg_hand.label_6.setText('Select language:')
+            self.dlg_hand.label_11.setToolTip(
+                'Add the watershed delineation. The file must be a raster type (GeoTIFF).')
+            self.dlg_hand.label_12.setToolTip(
+                'Add the digital elevation model. The file must be a raster type (GeoTIFF).')
+            self.dlg_hand.label_13.setToolTip(
+                'Add the flow direction. The file must be a raster type (GeoTIFF).')
+            self.dlg_hand.label_14.setToolTip(
+                'Add the River Drainage Network. The file must be a raster type (GeoTIFF).')
+            self.dlg_hand.label_15.setToolTip(
+                'Select a folder to save the resulting HAND. The file will be added to the current QGIS project!')
+            html_description = (
+                '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">'
+                '<html><head><meta name="qrichtext" content="1" /><style type="text/css">'
+                'p, li { white-space: pre-wrap; }'
+                '</style></head><body style=" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;">'
+                '<p align="justify" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:12pt; font-weight:600; color:#7c7c7c;">Description<br /></span></p>'
+                '<p align="justify" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:10pt; color:#838383;">This plugin determines the Height Above Nearest Drainage (HAND), a terrain descriptor defined by the elevation difference between a surface point and the nearest drainage network point to which it drains¹.</span></p>'
+                '<p align="justify" style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt; color:#838383;"><br /></p>'
+                '<p align="justify" style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt; color:#838383;"><br /></p>'
+                '<p align="justify" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:7pt; color:#838383;">¹RENNÓ, C.D.</span><span style=" font-size:7pt; font-style:italic; color:#838383;"> et a</span><span style=" font-size:7pt; color:#838383;">l. “HAND, a new terrain descriptor using SRTM-DEM: mapping terra-firmerainforest environments in Amazonia”. Remote Sensing of Environment 112, 3469-3481, 2008.</span></p></body></html>'
+            )
+            self.dlg_hand.textEdit.setHtml(html_description)
+
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
@@ -200,6 +316,15 @@ class Hand:
         self.dlg_hand.btn_cancel.clicked.connect(
             lambda: self.cancel_log_page())
 
+        # Conecta os botões de idioma
+        self.dlg_hand.btn_eng.clicked.connect(
+            lambda: self.traduz_interface('en'))
+        self.dlg_hand.btn_ptbr.clicked.connect(
+            lambda: self.traduz_interface('pt'))
+
+        # Inicializa interface em inglês
+        self.traduz_interface('en')
+
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -233,9 +358,9 @@ class Hand:
                 file_, _ = QFileDialog.getOpenFileName(
                     None, "Seleciona um arquivo!", "", "GeoTIFF (*.tif)", options=options)
                 if not file_:
-                    result = "Nenhum arquivo foi selecinado."
+                    result = self.msgs[self.idioma_atual]['no_file_selected']
                     reply = QMessageBox.warning(
-                        self.dlg_hand, "Atenção", result, QMessageBox.Ok)
+                        self.dlg_hand, self.msgs[self.idioma_atual]['warning_title'], result, QMessageBox.Ok)
                     if reply == QMessageBox.Ok:
                         break
 
@@ -261,21 +386,17 @@ class Hand:
                 break
 
             else:
-                # O usuario nao solucionou um arquivo (um caminho para salvar o arquivo de saida)
-                result = "Nenhum arquivo foi selecinado."
+                # O usuario nao selecionou um arquivo (um caminho para salvar o arquivo de saida)
+                result = self.msgs[self.idioma_atual]['no_file_selected']
                 reply = QMessageBox.warning(
-                    self.dlg_hand, "Atenção", result, QMessageBox.Ok)
+                    self.dlg_hand, self.msgs[self.idioma_atual]['warning_title'], result, QMessageBox.Ok)
                 if reply == QMessageBox.Ok:
                     break
 
     def cancel_log_page(self):
         '''Esta funcao configura o botao de cancelar da pagina de log'''
-        mensagem_log1 = None
         self.dlg_hand.te_logg.clear()
-        # Cria texto formatado para adicionar ao text edit? mensagem de aviso
-        mensagem_log1 = '<font>\nATTENTION: stopping HAND process...</font>'
-
-        # Adiciona o texto formatado no QTextEdit
+        mensagem_log1 = self.msgs[self.idioma_atual]['cancel_log']
         self.dlg_hand.te_logg.insertHtml(mensagem_log1)
 
         # Reativa a pagina de parametros
@@ -341,9 +462,22 @@ class Hand:
         gdal.Translate(drenagem_rst, drenagem_temp_tif, format="RST")
         self.dlg_hand.progressBar.setValue(50)
 
+    def verify_file_name(self):
+        """Verifica se o nome do arquivo de saída é válido."""
+        file_name = self.dlg_hand.le_01.text()
+        if not file_name.lower().endswith('.tif'):
+            QMessageBox.warning(
+                self.dlg_hand, self.msgs[self.idioma_atual]['error_title'], self.msgs[self.idioma_atual]['invalid_filename'])
+            self.dlg_hand.progressBar.setValue(0)
+            return False
+        return True
+
     def run_process_hand(self):
-        """Organiza a criacao dos arquivos que serao lidos pela rotina Hand em fortran. 
+        """Organiza a criacao dos arquivos que serao lidos pela rotina Hand em fortran.
         Salva e adicona ao projeto atual do qgis o raster gerado"""
+        if not self.verify_file_name():
+            return  # Se o nome do arquivo não for válido, interrompe o processo
+
         # Ativiva a pagina de log e limpa as informacoes passadas no text_edit
         mensagem_log1 = None
         mensagem_log = None
@@ -368,6 +502,15 @@ class Hand:
         mensagem_log1 += "--------------------------------------------------------\n"
         mensagem_log1 += f"Algorithm started at: {datatime_started}\n"
         mensagem_log1 += "--------------------------------------------------------\n"
+        if self.idioma_atual == 'pt':
+            mensagem_log1 = "O plugin foi desenvolvido com:\n"
+            mensagem_log1 += f"QGIS Versão: {version_info['QGIS Version']}\n"
+            mensagem_log1 += f"Qt Versão: {version_info['Qt Version']}\n"
+            mensagem_log1 += f"Python Versão: {version_info['Python Version']}\n"
+            mensagem_log1 += f"GDAL Versão: {version_info['GDAL Version']}\n"
+            mensagem_log1 += "--------------------------------------------------------\n"
+            mensagem_log1 += f"Algoritmo iniciado em: {datatime_started}\n"
+            mensagem_log1 += "--------------------------------------------------------\n"
         self.dlg_hand.te_logg.append(mensagem_log1)
 
         # Chama funcao que converte os arquivos
@@ -375,16 +518,22 @@ class Hand:
 
         # Chama executavel fortran
         # Chama executavel fortrar para iniciar o processamento do hand
-        mensagem_log = f"Inicando processamento do HAND...\n"
+        mensagem_log = self.msgs[self.idioma_atual]['hand_start']
         self.dlg_hand.te_logg.append(mensagem_log)
         workdir = self.diretorio_atual + r'\temp'
-        hand_fortran = self.diretorio_atual + r'\temp\HAND.exe'
+        if platform.system() == "Windows":
+            hand_fortran = os.path.join(
+                self.diretorio_atual, "temp", "HAND.exe")
+        else:
+            hand_fortran = os.path.join(self.diretorio_atual, "temp", "HAND")
+            subprocess.run(["chmod", "+x", hand_fortran], cwd=workdir)
+
         hand_exe = subprocess.run([hand_fortran], cwd=workdir)
 
         # verifica se houve algum erro no processamento da rotina fortran
         # Caso nao, a execucao continua no python
         if hand_exe.returncode == 0:
-            mensagem_log = f"HAND determinado com sucesso...\n"
+            mensagem_log = self.msgs[self.idioma_atual]['hand_success']
             self.dlg_hand.te_logg.append(mensagem_log)
             self.dlg_hand.progressBar.setValue(75)
 
@@ -392,7 +541,7 @@ class Hand:
 
             # Converte arquivo do hand para geotiff e adiciona ao QGIS
             if os.path.isfile(hand_out) == True and self.dlg_hand.le_01.text() is not '':
-                mensagem_log = f"Convertendo arquivo para GeoTIFF...\n"
+                mensagem_log = self.msgs[self.idioma_atual]['hand_convert']
                 self.dlg_hand.te_logg.append(mensagem_log)
                 gdal.Translate(self.dlg_hand.le_01.text(),
                                hand_out, format="GTiff", outputType=gdal.GDT_Float32, outputSRS=self.projection)
@@ -401,7 +550,7 @@ class Hand:
                 # Adiciona ao qgis o resultado
                 file_ = self.dlg_hand.le_01.text()
 
-                mensagem_log = f"Adicionando arquivo ao QGIS...\n"
+                mensagem_log = self.msgs[self.idioma_atual]['hand_add']
                 self.dlg_hand.te_logg.append(mensagem_log)
 
                 layer = QgsRasterLayer(
@@ -409,22 +558,22 @@ class Hand:
                 QgsProject.instance().addMapLayer(layer)
 
                 self.dlg_hand.progressBar.setValue(100)
-                mensagem_log = "Êxito! Operação realizada com sucesso..."
+                mensagem_log = self.msgs[self.idioma_atual]['success_log']
                 self.dlg_hand.te_logg.append(mensagem_log)
 
                 QMessageBox.information(
-                    self.dlg_hand, "Informação!", "Operação realizada com sucesso!")
+                    self.dlg_hand, self.msgs[self.idioma_atual]['info_title'], self.msgs[self.idioma_atual]['success'])
 
                 self.apaga_arquivos_temp()
 
             else:
                 QMessageBox.warning(
-                    self.dlg_hand, "Erro!", "Por favor, forneca um caminho válido para salvar o HAND.")
+                    self.dlg_hand, self.msgs[self.idioma_atual]['error_title'], self.msgs[self.idioma_atual]['invalid_path'])
                 self.dlg_hand.progressBar.setValue(0)
                 self.apaga_arquivos_temp()
         else:
             QMessageBox.warning(
-                self.dlg_hand, "Erro!", "Por favor, verifique se os arquivos enviados correspondem aos que foram solicitados.")
+                self.dlg_hand, self.msgs[self.idioma_atual]['error_title'], self.msgs[self.idioma_atual]['hand_error'])
             self.dlg_hand.progressBar.setValue(0)
 
     def run(self):
