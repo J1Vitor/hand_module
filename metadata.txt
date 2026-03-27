@@ -5,12 +5,12 @@
 [general]
 name=HAND Plugin
 qgisMinimumVersion=3.0
-description=Gera o Height Above Nearest Drainage (HAND).
-version=1.0
+description=Generates the Height Above Nearest Drainage (HAND).
+version=1.0.1
 author=João Vitor Lima & Adriano Paz
 email=jvdsl_off@outlook.com
 
-about=Este plugin determina o Height Above Nearest Drainage (HAND), um descritor do terreno dado pela diferença de altitude de um ponto da superfície em relação ao ponto mais próximo da rede de drenagem para o qual ele é drenante.
+about=This plugin computes the Height Above Nearest Drainage (HAND), a terrain descriptor defined as the elevation difference between a surface point and the nearest drainage network point to which it drains.
 
 tracker=https://github.com/J1Vitor/hand_module.git
 repository=https://github.com/J1Vitor/hand_module.git
@@ -23,9 +23,9 @@ hasProcessingProvider=no
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=HAND, MDE, Inundação
+tags=HAND, DEM, Flood-prone area
 
-homepage=https://github.com/J1Vitor/hand_module.git
+homepage=https://j1vitor.github.io/hand_module/
 category=Plugins
 icon=icon.png
 # experimental flag
