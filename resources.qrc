@@ -1,1 +1,7 @@
-<RCC/>
+<RCC>
+  <qresource prefix="fig">
+    <file>icons/br_flag.png</file>
+    <file>icons/info.png</file>
+    <file>icons/usa_flag.png</file>
+  </qresource>
+</RCC>
