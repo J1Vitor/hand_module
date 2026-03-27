@@ -6,7 +6,7 @@
 name=HAND Plugin
 qgisMinimumVersion=3.0
 description=Gera o Height Above Nearest Drainage (HAND).
-version=0.2
+version=1.0
 author=João Vitor Lima & Adriano Paz
 email=jvdsl_off@outlook.com
 
