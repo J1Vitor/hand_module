@@ -4,16 +4,13 @@
         Authors: A. Pasotti, V. Picavet
         git sha              : $TemplateVCSFormat
 """
-
 import xmlrpc.client
 import sys
 import getpass
 from optparse import OptionParser
 
-# Apply security patch BEFORE importing xmlrpc.client
 from defusedxml.xmlrpc import monkey_patch
 monkey_patch()
-
 
 standard_library.install_aliases()
 
