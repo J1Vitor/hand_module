@@ -4,15 +4,16 @@
         Authors: A. Pasotti, V. Picavet
         git sha              : $TemplateVCSFormat
 """
-import xmlrpc.client
-import sys
-import getpass
 from optparse import OptionParser
-
+import getpass
+import sys
+import xmlrpc.client
 from defusedxml.xmlrpc import monkey_patch
+from future import standard_library
+standard_library.install_aliases()
+
 monkey_patch()
 
-standard_library.install_aliases()
 
 # Configuration
 PROTOCOL = 'https'
